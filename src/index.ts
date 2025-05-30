@@ -15,17 +15,17 @@ enum SymbolProcessorState {
 }
 
 export class SymbolProcessor extends DurableObject {
+	MAX_SYMBOLS_TO_FETCH: number;
 	constructor(ctx: DurableObjectState, env: Env) {
 		super(ctx, env);
-		this.ctx.storage.get<number>(SymbolProcessorState.COUNT).then((count) => {
-			if (count === undefined) {
-				this.ctx.storage.put(SymbolProcessorState.COUNT, 0);
-			}
-		});
+		this.MAX_SYMBOLS_TO_FETCH = parseInt(env.MAX_SYMBOLS_TO_FETCH, 10);
 	}
-
 	async initializeSymbols() {
 		let tickerList = [];
+		const count = await this.ctx.storage.get<number>(SymbolProcessorState.COUNT);
+		if (count === undefined) {
+			this.ctx.storage.put(SymbolProcessorState.COUNT, 0);
+		}
 		const initialized = await this.ctx.storage.get<boolean>(SymbolProcessorState.INITIALIZED);
 		if (!initialized) {
 			try {
@@ -277,8 +277,14 @@ export class SymbolProcessor extends DurableObject {
 		let isSymbolProcessed = false;
 		await this.initializeSymbols();
 		const symbol = await this.getNextSymbol();
+		const count = await this.ctx.storage.get<number>(SymbolProcessorState.COUNT);
 		if (!symbol) {
 			console.log('❌ Something wrong. No symbols to process');
+			return;
+		}
+		console.log(`Processed ${count} symbols so far.`);
+		if (count && count >= this.MAX_SYMBOLS_TO_FETCH) {
+			console.log(`Reached max symbols to fetch.\nPausing execution.`);
 			return;
 		}
 		try {
@@ -295,15 +301,9 @@ export class SymbolProcessor extends DurableObject {
 			}
 		} finally {
 			await this.moveSymbolsAfterFetch(symbol, isSymbolProcessed);
-			const count = await this.ctx.storage.get<number>(SymbolProcessorState.COUNT);
-			console.log(`Processed ${count} symbols so far.`);
-			if (env.MAX_SYMBOLS_TO_FETCH === count) {
-				console.log(`Reached max symbols to fetch.\nNot scheduling alarm based execution.`);
-			} else {
-				this.ctx.storage.put(SymbolProcessorState.COUNT, (count ?? 0) + 1);
-				this.ctx.storage.setAlarm(new Date(Date.now() + 5 * 60 * 1000));
-				console.log(`Next alarm in 5 minutes.`);
-			}
+			this.ctx.storage.put(SymbolProcessorState.COUNT, (count ?? 0) + 1);
+			this.ctx.storage.setAlarm(new Date(Date.now() + 5 * 60 * 1000));
+			console.log(`Next alarm in 5 minutes.`);
 		}
 	}
 
@@ -313,6 +313,10 @@ export class SymbolProcessor extends DurableObject {
 
 	async alarm() {
 		await this.processNextSymbol();
+	}
+
+	async deleteCount() {
+		await this.ctx.storage.delete(SymbolProcessorState.COUNT);
 	}
 
 	async deleteAll() {
