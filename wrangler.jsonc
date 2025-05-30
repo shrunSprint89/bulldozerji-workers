@@ -11,10 +11,12 @@
 		"enabled": true
 	},
 	"triggers": {
-		"crons": [
-			"* * * * *"
-		]
-	}
+		"crons": ["*/5 * * * *"]
+	},
+	"assets": {
+		"binding": "ASSETS",
+		"directory": "./assets"
+	},
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
@@ -27,6 +29,29 @@
 	 * databases, object storage, AI inference, real-time communication and more.
 	 * https://developers.cloudflare.com/workers/runtime-apis/bindings/
 	 */
+
+	"d1_databases": [
+		{
+			"binding": "SymbolsDB", // This is the variable you use in your Worker code: env.DB
+			"database_name": "symbols-db-1-p",
+			"database_id": "850494ea-e660-4873-8aa9-6263d65ad5d4",
+			"preview_database_id": "symbols-db-1-preview" // Optional, for local dev
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "SYMBOL_PROCESSOR",
+				"class_name": "SymbolProcessor"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": ["SymbolProcessor"]
+		}
+	]
 
 	/**
 	 * Environment Variables

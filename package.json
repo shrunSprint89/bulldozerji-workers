@@ -9,7 +9,13 @@
 		"cf-typegen": "wrangler types"
 	},
 	"devDependencies": {
+		"@types/lodash": "^4.17.17",
+		"@types/node": "^22.15.21",
 		"typescript": "^5.5.2",
 		"wrangler": "^4.16.0"
+	},
+	"dependencies": {
+		"lodash": "^4.17.21",
+		"zod": "^3.25.28"
 	}
 }

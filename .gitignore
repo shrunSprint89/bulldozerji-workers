@@ -99,6 +99,7 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+.dev.vars
 
 # parcel-bundler cache (https://parceljs.org/)
 
@@ -170,3 +171,20 @@ dist
 
 .dev.vars
 .wrangler/
+
+
+# notes
+.notes*
+tmp_json
+
+#Local DB files
+local-d1.sqlite
+
+# Local VSCode settings
+.vscode
+
+#Python virtual environment
+.venv
+
+#Jupyter notebooks
+.ipynb_checkpoints

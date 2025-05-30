@@ -1,0 +1,282 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "companyName": { "type": "string" },
+    "industry": { "type": "string" },
+    "companyProfile": {
+      "type": "object",
+      "properties": {
+        "companyDescription": { "type": "string" },
+        "mgIndustry": { "type": "string" },
+        "isInId": { "type": "string" },
+        "officers": {
+          "type": "object",
+          "properties": {
+            "officer": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rank": { "type": ["integer", "string"] },
+                  "since": { "type": "string" },
+                  "firstName": { "type": "string" },
+                  "mI": { "type": ["string", "null"] },
+                  "lastName": { "type": "string" },
+                  "age": { "type": ["string", "null"] },
+                  "title": {
+                    "type": "object",
+                    "properties": {
+                      "startYear": { "type": "string" },
+                      "startMonth": { "type": "string" },
+                      "startDay": { "type": "string" },
+                      "iD1": { "type": "string" },
+                      "abbr1": { "type": "string" },
+                      "iD2": { "type": "string" },
+                      "abbr2": { "type": "string" },
+                      "Value": { "type": "string" }
+                    },
+                    "required": [
+                      "startYear",
+                      "startMonth",
+                      "startDay",
+                      "iD1",
+                      "abbr1",
+                      "iD2",
+                      "abbr2",
+                      "Value"
+                    ]
+                  }
+                },
+                "required": ["rank", "since", "firstName", "lastName", "title"]
+              }
+            }
+          },
+          "required": ["officer"]
+        }
+      },
+      "required": ["companyDescription", "mgIndustry", "isInId", "officers"]
+    },
+    "exchangeCodeBse": { "type": "string" },
+    "exchangeCodeNse": { "type": "string" },
+    "peerCompanyList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tickerId": { "type": "string" },
+          "companyName": { "type": "string" },
+          "priceToBookValueRatio": { "type": "number" },
+          "priceToEarningsValueRatio": { "type": "number" },
+          "marketCap": { "type": "number" },
+          "price": { "type": "number" },
+          "percentChange": { "type": "number" },
+          "netChange": { "type": "number" },
+          "returnOnAverageEquity5YearAverage": { "type": "number" },
+          "returnOnAverageEquityTrailing12Month": {
+            "type": ["number", "null"]
+          },
+          "ltDebtPerEquityMostRecentFiscalYear": { "type": "number" },
+          "netProfitMargin5YearAverage": { "type": "number" },
+          "netProfitMarginPercentTrailing12Month": { "type": "number" },
+          "dividendYieldIndicatedAnnualDividend": { "type": "number" },
+          "totalSharesOutstanding": { "type": "number" },
+          "languageSupport": { "type": "string" },
+          "imageUrl": { "type": "string" },
+          "overallRating": { "type": "string" },
+          "ylow": { "type": "number" },
+          "yhigh": { "type": "number" }
+        },
+        "required": [
+          "tickerId",
+          "companyName",
+          "priceToBookValueRatio",
+          "priceToEarningsValueRatio",
+          "marketCap",
+          "price",
+          "percentChange",
+          "netChange",
+          "returnOnAverageEquity5YearAverage",
+          "returnOnAverageEquityTrailing12Month",
+          "ltDebtPerEquityMostRecentFiscalYear",
+          "netProfitMargin5YearAverage",
+          "netProfitMarginPercentTrailing12Month",
+          "dividendYieldIndicatedAnnualDividend",
+          "totalSharesOutstanding",
+          "languageSupport",
+          "imageUrl",
+          "overallRating",
+          "ylow",
+          "yhigh"
+        ]
+      }
+    },
+    "currentPrice": {
+      "type": "object",
+      "properties": {
+        "BSE": { "type": "string" },
+        "NSE": { "type": "string" }
+      },
+      "required": ["BSE", "NSE"]
+    },
+    "stockTechnicalData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "days": { "type": "integer" },
+          "bsePrice": { "type": "string" },
+          "nsePrice": { "type": "string" }
+        },
+        "required": ["days", "bsePrice", "nsePrice"]
+      }
+    },
+    "percentChange": { "type": "string" },
+    "yearHigh": { "type": "string" },
+    "yearLow": { "type": "string" },
+    "financials": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "stockFinancialMap": {
+            "type": "object",
+            "properties": {
+              "CAS": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "displayName": { "type": "string" },
+                    "key": { "type": "string" },
+                    "value": { "type": "string" },
+                    "yqoQComp": { "type": ["string", "null"] },
+                    "qoQComp": { "type": ["string", "null"] }
+                  },
+                  "required": [
+                    "displayName",
+                    "key",
+                    "value",
+                    "yqoQComp",
+                    "qoQComp"
+                  ]
+                }
+              },
+              "BAL": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "displayName": { "type": "string" },
+                    "key": { "type": "string" },
+                    "value": { "type": "string" },
+                    "yqoQComp": { "type": ["string", "null"] },
+                    "qoQComp": { "type": ["string", "null"] }
+                  },
+                  "required": [
+                    "displayName",
+                    "key",
+                    "value",
+                    "yqoQComp",
+                    "qoQComp"
+                  ]
+                }
+              },
+              "INC": {
+                "type": ["array", "null"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "displayName": { "type": "string" },
+                    "key": { "type": "string" },
+                    "value": { "type": "string" },
+                    "yqoQComp": { "type": ["string", "null"] },
+                    "qoQComp": { "type": ["string", "null"] }
+                  },
+                  "required": [
+                    "displayName",
+                    "key",
+                    "value",
+                    "yqoQComp",
+                    "qoQComp"
+                  ]
+                }
+              }
+            },
+            "required": ["CAS", "BAL", "INC"]
+          },
+          "FiscalYear": { "type": "string" },
+          "EndDate": { "type": "string" },
+          "Type": { "type": "string" },
+          "StatementDate": { "type": "string" },
+          "fiscalPeriodNumber": { "type": "integer" }
+        },
+        "required": [
+          "stockFinancialMap",
+          "FiscalYear",
+          "EndDate",
+          "Type",
+          "StatementDate",
+          "fiscalPeriodNumber"
+        ]
+      }
+    },
+    "keyMetrics": {
+      "type": "object",
+      "properties": {
+        "mgmtEffectiveness": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "displayName": { "type": "string" },
+              "key": { "type": "string" },
+              "value": { "type": ["string", "null", "number"] }
+            },
+            "required": ["displayName", "key", "value"]
+          }
+        },
+        "margins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "displayName": { "type": "string" },
+              "key": { "type": "string" },
+              "value": { "type": ["string", "null", "number"] }
+            },
+            "required": ["displayName", "key", "value"]
+          }
+        },
+        "financialstrength": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "displayName": { "type": "string" },
+              "key": { "type": "string" },
+              "value": { "type": ["string", "null", "number"] }
+            },
+            "required": ["displayName", "key", "value"]
+          }
+        }
+      },
+      "required": ["mgmtEffectiveness", "margins", "financialstrength"]
+    }
+  },
+  "required": [
+    "companyName",
+    "industry",
+    "companyProfile",
+    "exchangeCodeBse",
+    "exchangeCodeNse",
+    "peerCompanyList",
+    "currentPrice",
+    "stockTechnicalData",
+    "percentChange",
+    "yearHigh",
+    "yearLow",
+    "financials",
+    "keyMetrics"
+  ]
+}
