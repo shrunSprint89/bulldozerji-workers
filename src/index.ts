@@ -7,6 +7,7 @@ import { TickerSymbol } from './types/symbols';
 
 enum SymbolProcessorState {
 	INITIALIZED = 'initialized',
+	COUNT = 'count',
 	TO_FETCH_SYMBOLS = 'toFetchSymbols',
 	FETCHED_SYMBOLS = 'fetchedSymbols',
 	FAILED_SYMBOLS = 'failedSymbols',
@@ -14,6 +15,15 @@ enum SymbolProcessorState {
 }
 
 export class SymbolProcessor extends DurableObject {
+	constructor(ctx: DurableObjectState, env: Env) {
+		super(ctx, env);
+		this.ctx.storage.get<number>(SymbolProcessorState.COUNT).then((count) => {
+			if (count === undefined) {
+				this.ctx.storage.put(SymbolProcessorState.COUNT, 0);
+			}
+		});
+	}
+
 	async initializeSymbols() {
 		let tickerList = [];
 		const initialized = await this.ctx.storage.get<boolean>(SymbolProcessorState.INITIALIZED);
@@ -238,37 +248,43 @@ export class SymbolProcessor extends DurableObject {
 		await this.upsertIntoKeyMetrics(env.SymbolsDB, symbol, data);
 	}
 
+	async fetchStockDetailsData(symbol: string): Promise<StockDetailsSchemaType> {
+		console.log(`Fetching data for ${symbol} from IndianAPI`);
+		const params = { name: symbol };
+		const url = new URL(INDIAN_API_STOCK_ENDPOINT, INDIAN_API_BASE_URL);
+		Object.entries(params).forEach(([key, value]) => {
+			url.searchParams.append(key, value);
+		});
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: {
+				'X-Api-Key': env.INDIANAPI_API_KEY,
+			},
+		});
+		const data = await response.json<StockDetailsSchemaType>();
+		console.log(`Fetched Data for ${symbol} with {company_id: ${data.companyProfile.isInId}`);
+		return data;
+	}
+
+	async validateStockDataWithZod(data: any) {
+		console.log(`Validating data with Zod`);
+		const parsed: StockDetailsSchemaType = StockDetailsSchema.parse(data);
+		console.log(`Data for company_id: ${data.companyProfile.isInId} is valid.`);
+		return parsed;
+	}
+
 	async processNextSymbol() {
+		let isSymbolProcessed = false;
 		await this.initializeSymbols();
 		const symbol = await this.getNextSymbol();
-
 		if (!symbol) {
 			console.log('❌ Something wrong. No symbols to process');
 			return;
 		}
-
 		try {
-			console.log(`Fetching data for ${symbol} from IndianAPI`);
-			const params = { name: symbol };
-			const url = new URL(INDIAN_API_STOCK_ENDPOINT, INDIAN_API_BASE_URL);
-			Object.entries(params).forEach(([key, value]) => {
-				url.searchParams.append(key, value);
-			});
-			const response = await fetch(url, {
-				method: 'GET',
-				headers: {
-					'X-Api-Key': env.INDIANAPI_API_KEY,
-				},
-			});
-			const data: StockDetailsSchemaType = await response.json();
-			console.log(`Fetched Data for ${symbol} with {company_id: ${data.companyProfile.isInId}.Attempting to validate with Zod`);
-
-			// Validate with Zod
-			const parsed: StockDetailsSchemaType = StockDetailsSchema.parse(data);
-			console.log(`Data for ${symbol} with {company_id: ${data.companyProfile.isInId} is valid.`);
-
-			await this.upsertStockDetails(symbol, parsed);
-			await this.moveSymbolsAfterFetch(symbol);
+			const data: StockDetailsSchemaType = await this.fetchStockDetailsData(symbol).then((data) => this.validateStockDataWithZod(data));
+			await this.upsertStockDetails(symbol, data);
+			isSymbolProcessed = true;
 			console.log(`✅ Processed ${symbol}.`);
 		} catch (error) {
 			if (error instanceof ZodError) {
@@ -277,10 +293,17 @@ export class SymbolProcessor extends DurableObject {
 			} else {
 				console.error(`❌ Failed to process ${symbol}:`, error);
 			}
-			await this.moveSymbolsAfterFetch(symbol, false);
 		} finally {
-			console.log(`Next alarm in 5 minutes.`);
-			this.ctx.storage.setAlarm(new Date(Date.now() + 5 * 60 * 1000));
+			await this.moveSymbolsAfterFetch(symbol, isSymbolProcessed);
+			const count = await this.ctx.storage.get<number>(SymbolProcessorState.COUNT);
+			console.log(`Processed ${count} symbols so far.`);
+			if (env.MAX_SYMBOLS_TO_FETCH === count) {
+				console.log(`Reached max symbols to fetch.\nNot scheduling alarm based execution.`);
+			} else {
+				this.ctx.storage.put(SymbolProcessorState.COUNT, (count ?? 0) + 1);
+				this.ctx.storage.setAlarm(new Date(Date.now() + 5 * 60 * 1000));
+				console.log(`Next alarm in 5 minutes.`);
+			}
 		}
 	}
 
@@ -294,10 +317,10 @@ export class SymbolProcessor extends DurableObject {
 
 	async deleteAll() {
 		await this.ctx.storage.deleteAll();
+		await this.ctx.storage.deleteAlarm();
 	}
 }
 
-// Worker setup
 export default {
 	async fetch(request: Request, env: Env) {
 		const id = env.SYMBOL_PROCESSOR.idFromName('main');

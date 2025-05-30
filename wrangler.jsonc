@@ -51,13 +51,13 @@
 			"tag": "v1",
 			"new_sqlite_classes": ["SymbolProcessor"]
 		}
-	]
+	],
 
 	/**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
-	// "vars": { "MY_VARIABLE": "production_value" },
+	"vars": { "MAX_SYMBOLS_TO_FETCH": 250 }
 	/**
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
