@@ -10,9 +10,10 @@
 	"observability": {
 		"enabled": true
 	},
-	"triggers": {
-		"crons": ["*/5 * * * *"]
-	},
+	/**
+	 * Static Assets
+	 * https://developers.cloudflare.com/workers/static-assets/binding/
+	 */
 	"assets": {
 		"binding": "ASSETS",
 		"directory": "./assets"
@@ -34,8 +35,7 @@
 		{
 			"binding": "SymbolsDB", // This is the variable you use in your Worker code: env.DB
 			"database_name": "symbols-db-1-p",
-			"database_id": "850494ea-e660-4873-8aa9-6263d65ad5d4",
-			"preview_database_id": "symbols-db-1-preview" // Optional, for local dev
+			"database_id": "850494ea-e660-4873-8aa9-6263d65ad5d4"
 		}
 	],
 	"durable_objects": {
@@ -62,12 +62,6 @@
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-
-	/**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" },
 
 	/**
 	 * Service Bindings (communicate between multiple Workers)
