@@ -291,6 +291,10 @@ export class SymbolProcessor extends DurableObject {
 	async alarm() {
 		await this.processNextSymbol();
 	}
+
+	async deleteAll() {
+		await this.ctx.storage.deleteAll();
+	}
 }
 
 // Worker setup
@@ -298,8 +302,16 @@ export default {
 	async fetch(request: Request, env: Env) {
 		const id = env.SYMBOL_PROCESSOR.idFromName('main');
 		const stub = env.SYMBOL_PROCESSOR.get(id);
+		const url = new URL(request.url);
+
+		//Resetting the Durable Object State
+		if (url.pathname === '/reset') {
+			await stub.deleteAll();
+			return new Response('Data reset', { status: 200 });
+		}
+
 		await stub.setRequestUrl(request);
 		await stub.processNextSymbol();
-		return new Response('Processor started.');
+		return new Response('Processor started', { status: 200 });
 	},
 };
