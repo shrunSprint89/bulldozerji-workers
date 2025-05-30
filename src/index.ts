@@ -337,6 +337,12 @@ export default {
 			return new Response('Data reset', { status: 200 });
 		}
 
+		//Resetting the Durable Object State
+		if (url.pathname === '/deleteCount') {
+			await stub.deleteCount();
+			return new Response('Count reset', { status: 200 });
+		}
+
 		await stub.setRequestUrl(request);
 		await stub.processNextSymbol();
 		return new Response('Processor started', { status: 200 });
