@@ -243,8 +243,11 @@ export class SymbolProcessor extends DurableObject {
 	async upsertStockDetails(symbol: string, data: StockDetailsSchemaType) {
 		console.log(`Attempting to insert data for ${symbol} into D1 Database`);
 		await this.upsertIntoCompanies(env.SymbolsDB, symbol, data);
-		await this.upsertIntoPeerCompanies(env.SymbolsDB, symbol, data);
-		await this.upsertIntoFinancialData(env.SymbolsDB, symbol, data);
+
+		//Commented out to reduce overall D1 writes per day - Can be updated later as per need
+		//await this.upsertIntoPeerCompanies(env.SymbolsDB, symbol, data);
+		//await this.upsertIntoFinancialData(env.SymbolsDB, symbol, data);
+
 		await this.upsertIntoKeyMetrics(env.SymbolsDB, symbol, data);
 	}
 
@@ -315,6 +318,20 @@ export class SymbolProcessor extends DurableObject {
 		await this.processNextSymbol();
 	}
 
+	async getSymbolsJSON() {
+		const toFetchSymbols = (await this.ctx.storage.get<string[]>(SymbolProcessorState.TO_FETCH_SYMBOLS)) || [];
+		const fetchedSymbols = (await this.ctx.storage.get<string[]>(SymbolProcessorState.FETCHED_SYMBOLS)) || [];
+		const failedSymbols = (await this.ctx.storage.get<string[]>(SymbolProcessorState.FAILED_SYMBOLS)) || [];
+
+		const symbolsJSON = JSON.stringify({
+			[SymbolProcessorState.TO_FETCH_SYMBOLS]: toFetchSymbols,
+			[SymbolProcessorState.FETCHED_SYMBOLS]: fetchedSymbols,
+			[SymbolProcessorState.FAILED_SYMBOLS]: failedSymbols,
+		});
+
+		return symbolsJSON;
+	}
+
 	async deleteCount() {
 		await this.ctx.storage.delete(SymbolProcessorState.COUNT);
 	}
@@ -341,6 +358,16 @@ export default {
 		if (url.pathname === '/deleteCount') {
 			await stub.deleteCount();
 			return new Response('Count reset', { status: 200 });
+		}
+
+		if (request.method === 'GET' && url.pathname === '/downloadSymbols') {
+			const jsonData = await stub.getSymbolsJSON(); // Function to retrieve data from KV
+			return new Response(JSON.stringify(jsonData), {
+				headers: {
+					'Content-Type': 'application/json',
+					'Content-Disposition': 'attachment; filename="symbolsList.json"',
+				},
+			});
 		}
 
 		await stub.setRequestUrl(request);
